@@ -16,7 +16,7 @@ if (!function_exists('navCls')) { function navCls($k, $active) { return $k === $
   <meta property="og:title" content="<?= htmlspecialchars($page_title) ?>">
   <meta property="og:description" content="<?= htmlspecialchars($page_desc) ?>">
   <meta property="og:type" content="website">
-  <meta property="og:image" content="assets/images/villa.jpg">
+  <meta property="og:image" content="https://aifbtelanganastateparty-dotcom.github.io/pacearchitects/assets/images/villa.jpg">
   <link rel="icon" type="image/jpeg" href="assets/images/logo.jpeg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
