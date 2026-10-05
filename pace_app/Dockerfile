@@ -1,15 +1,11 @@
-FROM dunglas/frankenphp:1-php8.3-alpine
+FROM php:8.3-apache
 
-WORKDIR /app
+# Copy the app files to the Apache document root
+COPY public/ /var/www/html/
 
-# Copy the caddy configuration
-COPY Caddyfile /etc/caddy/Caddyfile
+# Make sure apache can bind to Render's dynamic PORT
+RUN sed -i 's/80/${PORT}/g' /etc/apache2/ports.conf /etc/apache2/sites-available/000-default.conf
 
-# Copy the app files
-COPY . /app
-
-# Set port for Vercel
+# Render passes PORT at runtime, but we set a default just in case
 ENV PORT=8080
 EXPOSE 8080
-
-CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]
