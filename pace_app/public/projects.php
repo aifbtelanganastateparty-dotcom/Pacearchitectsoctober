@@ -21,6 +21,7 @@ include __DIR__ . '/includes/header.php';
       <button data-filter="commercial">Commercial</button>
       <button data-filter="housing">Housing</button>
       <button data-filter="interior">Interiors</button>
+      <button data-filter="walkthrough">Walkthroughs</button>
     </div>
     <div class="work-grid">
       <article class="work reveal" data-cat="residential"><img src="assets/images/villa.jpg" alt="Luxury villa" loading="lazy" decoding="async"><span class="work-arrow" aria-hidden="true"><i class="fas fa-arrow-up-right"></i></span><div class="work-body"><span class="work-tag">Residential</span><h3>Hillside Luxury Villa</h3><p>Jubilee Hills • 6,200 sq.ft • Design + Build</p></div></article>
@@ -30,6 +31,53 @@ include __DIR__ . '/includes/header.php';
       <article class="work reveal reveal-d1" data-cat="interior"><img src="assets/images/banner.jpeg" alt="Warm minimal home interior detail" loading="lazy" decoding="async"><span class="work-arrow" aria-hidden="true"><i class="fas fa-arrow-up-right"></i></span><div class="work-body"><span class="work-tag">Interiors</span><h3>Warm Minimal Home</h3><p>Financial District • 2,100 sq.ft • Full home</p></div></article>
       <article class="work reveal reveal-d2" data-cat="interior"><img src="assets/images/office.jpg" alt="Office interior" loading="lazy" decoding="async"><span class="work-arrow" aria-hidden="true"><i class="fas fa-arrow-up-right"></i></span><div class="work-body"><span class="work-tag">Interiors</span><h3>Studio Workplace</h3><p>Banjara Hills • 4,800 sq.ft • Fit-out</p></div></article>
     </div>
+    
+    <div id="walkthrough-heading" class="section-head reveal mt-28" style="margin-top: 4rem;">
+      <span class="eyebrow">Real Progress</span>
+      <h2>Site <em>Walkthroughs.</em></h2>
+      <p>Raw, unedited glimpses into our ongoing sites and finished structures.</p>
+    </div>
+    <div class="work-grid" style="margin-top: 2rem;">
+<?php
+      $walkthroughs = 13;
+      for ($i = 1; $i <= $walkthroughs; $i++):
+        $delay = ($i % 3 == 1) ? '' : (($i % 3 == 2) ? ' reveal-d1' : ' reveal-d2');
+?>
+      <article class="work reveal<?= $delay ?>" data-cat="walkthrough">
+        <video src="assets/media/walkthrough-<?= $i ?>.mp4" preload="none" muted loop playsinline style="width: 100%; height: 100%; object-fit: cover; background: #000;"></video>
+        <div class="work-body">
+          <span class="work-tag">Site Progress</span>
+          <h3>Walkthrough <?= $i ?></h3>
+        </div>
+      </article>
+<?php endfor; ?>
+      <article class="work reveal" data-cat="walkthrough">
+        <img src="assets/media/project-image-1.jpeg" alt="Recent site update" loading="lazy" decoding="async">
+        <div class="work-body">
+          <span class="work-tag">Update</span>
+          <h3>Site Image 1</h3>
+        </div>
+      </article>
+      <article class="work reveal reveal-d1" data-cat="walkthrough">
+        <img src="assets/media/project-image-2.jpeg" alt="Recent site update" loading="lazy" decoding="async">
+        <div class="work-body">
+          <span class="work-tag">Update</span>
+          <h3>Site Image 2</h3>
+        </div>
+      </article>
+      <article class="work reveal reveal-d2" data-cat="walkthrough">
+        <img src="assets/media/project-image-3.jpeg" alt="Recent site update" loading="lazy" decoding="async">
+        <div class="work-body">
+          <span class="work-tag">Update</span>
+          <h3>Site Image 3</h3>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section-tight">
+  <div class="container">
     <div class="cta reveal mt-28">
       <div><h2>Like this language? <em>Let's adapt it to your plot.</em></h2><p>Share site photos + requirements. Moodboards and fee proposal within 48 hours.</p></div>
       <div class="cta-actions"><a href="contact.php" class="btn btn-gold">Discuss your site</a></div>

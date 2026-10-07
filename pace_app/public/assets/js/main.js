@@ -51,19 +51,38 @@ document.addEventListener('DOMContentLoaded', () => {
     els.forEach(el => el.classList.add('in'));
   }
 
-  /* ---------- Hero slideshow (crossfade) ---------- */
+  /* ---------- Hero slideshow (mixed media) ---------- */
   const hero = document.querySelector('.hero[data-slideshow]');
   const dotsWrap = document.querySelector('.hero-dots');
   if (hero) {
-    const images = (hero.dataset.slideshow || '').split('|').filter(Boolean);
-    images.forEach(src => { const im = new Image(); im.src = src; });
+    const items = (hero.dataset.slideshow || '').split('|').filter(Boolean);
     let idx = 0;
-    let layerA = hero.querySelector('.hero-bg');
-    if (!layerA) return;
-    // build dots (idempotent)
-    if (dotsWrap) dotsWrap.innerHTML = '';
-    if (dotsWrap && images.length > 1) {
-      images.forEach((_, i) => {
+    const layerWrap = hero.querySelector('.hero-bg');
+    if (!layerWrap) return;
+    layerWrap.innerHTML = ''; // Clear if any
+
+    const mediaEls = items.map((src, i) => {
+      let el;
+      if (src.endsWith('.mp4')) {
+        el = document.createElement('video');
+        el.src = src;
+        el.muted = true;
+        el.loop = true;
+        el.playsInline = true;
+        el.preload = i === 0 ? 'auto' : 'none'; // Only preload first video
+      } else {
+        el = document.createElement('div');
+        el.style.backgroundImage = `url('${src}')`;
+      }
+      el.className = 'hero-media-item';
+      if (i === 0) el.classList.add('active');
+      layerWrap.appendChild(el);
+      return el;
+    });
+
+    if (dotsWrap && items.length > 1) {
+      dotsWrap.innerHTML = '';
+      items.forEach((_, i) => {
         const b = document.createElement('button');
         b.type = 'button';
         b.setAttribute('aria-label', 'Slide ' + (i + 1));
@@ -73,30 +92,37 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
     const dots = dotsWrap ? [...dotsWrap.children] : [];
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
     function go(n, manual) {
-      idx = (n + images.length) % images.length;
-      if (reduceMotion) {
-        layerA.style.backgroundImage = `url('${images[idx]}')`;
-      } else {
-        layerA.classList.add('fading');
-        setTimeout(() => {
-          layerA.style.backgroundImage = `url('${images[idx]}')`;
-          layerA.classList.remove('fading');
-        }, 350);
+      const prevIdx = idx;
+      idx = (n + items.length) % items.length;
+      if (prevIdx === idx) return;
+
+      mediaEls[prevIdx].classList.remove('active');
+      mediaEls[idx].classList.add('active');
+
+      if (mediaEls[idx].tagName === 'VIDEO') {
+        mediaEls[idx].play().catch(() => {});
       }
+      if (mediaEls[prevIdx].tagName === 'VIDEO') {
+        setTimeout(() => mediaEls[prevIdx].pause(), 1200);
+      }
+
       dots.forEach((d, i) => d.classList.toggle('on', i === idx));
       if (manual) restart();
     }
+
     let timer = null;
     function restart() {
       if (timer) clearInterval(timer);
-      if (images.length > 1 && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        timer = setInterval(() => go(idx + 1), 5500);
+      if (items.length > 1 && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        timer = setInterval(() => go(idx + 1), 6000);
       }
     }
-    // set initial
-    layerA.style.backgroundImage = `url('${images[0]}')`;
+
+    if (mediaEls[0].tagName === 'VIDEO') {
+      mediaEls[0].play().catch(() => {});
+    }
     restart();
   }
 
@@ -133,7 +159,28 @@ document.addEventListener('DOMContentLoaded', () => {
         c.style.display = show ? '' : 'none';
         if (show) { c.classList.remove('in'); requestAnimationFrame(() => requestAnimationFrame(() => c.classList.add('in'))); }
       });
+      const walkHeading = document.getElementById('walkthrough-heading');
+      if (walkHeading) {
+        walkHeading.style.display = (f === 'all' || f === 'walkthrough') ? '' : 'none';
+      }
     }));
+  }
+
+  /* ---------- Video Playback Observer ---------- */
+  const videos = document.querySelectorAll('video');
+  if ('IntersectionObserver' in window && videos.length) {
+    const videoIo = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.play().catch(err => console.log('Video autoplay blocked:', err));
+        } else {
+          e.target.pause();
+        }
+      });
+    }, { threshold: 0.2 });
+    videos.forEach(v => {
+      videoIo.observe(v);
+    });
   }
 
   /* ---------- Pricing cards -> contact (non-link cards only; anchors navigate natively) ---------- */
@@ -151,3 +198,103 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ---------- Footer year ---------- */
   document.querySelectorAll('[data-year]').forEach(el => (el.textContent = new Date().getFullYear()));
 });
+
+  /* ---------- Smooth Page Transitions (Fade out) ---------- */
+  document.querySelectorAll('a').forEach(link => {
+    if (link.hostname !== window.location.hostname || link.hasAttribute('download') || link.getAttribute('target') === '_blank' || link.getAttribute('href').startsWith('#') || link.getAttribute('href').startsWith('tel:') || link.getAttribute('href').startsWith('mailto:')) return;
+    
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      const target = link.href;
+      document.body.style.transition = 'opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)';
+      document.body.style.opacity = '0';
+      document.body.style.transform = 'translateY(15px)';
+      setTimeout(() => {
+        window.location.href = target;
+      }, 550);
+    });
+  });
+
+  /* ---------- Parallax on Images ---------- */
+  const imgObserver = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        window.addEventListener('scroll', parallax);
+      } else {
+        window.removeEventListener('scroll', parallax);
+      }
+    });
+  });
+  
+  const parallaxImages = document.querySelectorAll('.work img, .split-media img, .arch-card img');
+  if (parallaxImages.length) {
+    parallaxImages.forEach(img => imgObserver.observe(img));
+  }
+
+  function parallax() {
+    parallaxImages.forEach(img => {
+      const rect = img.getBoundingClientRect();
+      // Only parallax if visible in viewport
+      if (rect.top < window.innerHeight && rect.bottom > 0) {
+        const offset = (window.innerHeight - rect.top) * 0.05;
+        // Don't override CSS transforms (scale) completely, instead we can adjust object-position for true parallax
+        img.style.objectPosition = `50% calc(50% + ${offset}px)`;
+      }
+    });
+  }
+
+  /* ---------- Custom Cursor ---------- */
+  if (window.matchMedia("(pointer: fine)").matches) {
+    const cursor = document.createElement('div');
+    cursor.classList.add('custom-cursor');
+    const cursorDot = document.createElement('div');
+    cursorDot.classList.add('custom-cursor-dot');
+    document.body.appendChild(cursor);
+    document.body.appendChild(cursorDot);
+
+    let mouseX = 0, mouseY = 0;
+    let cursorX = 0, cursorY = 0;
+
+    document.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      cursorDot.style.left = `${mouseX}px`;
+      cursorDot.style.top = `${mouseY}px`;
+    });
+
+    const loop = () => {
+      cursorX += (mouseX - cursorX) * 0.15;
+      cursorY += (mouseY - cursorY) * 0.15;
+      cursor.style.left = `${cursorX}px`;
+      cursor.style.top = `${cursorY}px`;
+      requestAnimationFrame(loop);
+    };
+    requestAnimationFrame(loop);
+
+    const interactiveElements = document.querySelectorAll('a, button, input, textarea, select, .work, .price-card, .menu-btn');
+    interactiveElements.forEach(el => {
+      el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+      el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+    });
+  }
+
+  /* ---------- Media Slow Zoom Reveal ---------- */
+  const allMedia = document.querySelectorAll('img:not(.brand-logo):not(.footer-brand img), video');
+  if ('IntersectionObserver' in window && allMedia.length) {
+    const mediaIo = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('media-in');
+          mediaIo.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+    
+    allMedia.forEach(el => {
+      // Don't apply to hero backgrounds since they have their own animations
+      if (!el.closest('.hero-bg') && !el.closest('.page-hero-bg')) {
+        el.classList.add('media-reveal-start');
+        mediaIo.observe(el);
+      }
+    });
+  }

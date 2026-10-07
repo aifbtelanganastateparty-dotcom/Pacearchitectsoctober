@@ -1,4 +1,7 @@
 <?php
+if (php_sapi_name() !== 'cli') {
+    exit('Only allowed from CLI');
+}
 require_once 'database.php';
 
 try {

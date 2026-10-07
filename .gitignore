@@ -1,3 +1,5 @@
 *.log
 cloudflared
 build_static/
+.vercel
+.env*

@@ -1,12 +1,14 @@
 <?php
-$db_file = __DIR__ . '/contacts.db';
+$db_file = dirname(__DIR__) . '/contacts.db';
 
 try {
     $pdo = new PDO("sqlite:" . $db_file);
     // Set errormode to exceptions
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (PDOException $e) {
-    echo "Connection failed: " . $e->getMessage();
+    // Log the actual error internally (error_log($e->getMessage());)
+    error_log("Database connection failed: " . $e->getMessage());
+    echo "Service temporarily unavailable. Please try again later.";
     exit;
 }
 ?>

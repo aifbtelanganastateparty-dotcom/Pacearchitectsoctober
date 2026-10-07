@@ -5,8 +5,14 @@ $page_desc = 'Hyderabad architecture studio for villas, homes, offices & turnkey
 include __DIR__ . '/includes/header.php';
 ?>
 
-<section class="hero" data-slideshow="assets/images/villa.jpg|assets/images/bungalow.jpg|assets/images/apartment.jpg|assets/images/office.jpg">
-  <div class="hero-bg" aria-hidden="true" style="background-image:url('assets/images/villa.jpg')"></div>
+<?php
+$hero_slides = [];
+for ($i=1; $i<=13; $i++) {
+    $hero_slides[] = "assets/media/walkthrough-$i.mp4";
+}
+?>
+<section class="hero" data-slideshow="<?= implode('|', $hero_slides) ?>">
+  <div class="hero-bg" aria-hidden="true"></div>
   <div class="hero-inner">
     <span class="hero-badge"><span class="pulse"><i class="fas fa-compass-drafting"></i></span> Banjara Hills • Hyderabad — since 2010</span>
     <h1>Spaces that feel <em>inevitable.</em> Built with precision.</h1>
@@ -118,7 +124,62 @@ include __DIR__ . '/includes/header.php';
     <div class="work-grid">
       <article class="work reveal"><img src="assets/images/villa.jpg" alt="Hillside luxury villa" loading="lazy" decoding="async"><a class="work-arrow" href="projects.php" aria-label="View"><i class="fas fa-arrow-up-right"></i></a><div class="work-body"><span class="work-tag">Residential</span><h3>Hillside Luxury Villa</h3><p>Jubilee Hills • 6,200 sq.ft • Turnkey</p></div></article>
       <article class="work reveal reveal-d1"><img src="assets/images/office.jpg" alt="Corporate office building" loading="lazy" decoding="async"><a class="work-arrow" href="projects.php" aria-label="View"><i class="fas fa-arrow-up-right"></i></a><div class="work-body"><span class="work-tag">Commercial</span><h3>Corporate HQ Facade</h3><p>HITEC City • Architecture + Interiors</p></div></article>
-      <article class="work reveal reveal-d2"><img src="assets/images/apartment.jpg" alt="Urban apartment tower at dusk" loading="lazy" decoding="async"><a class="work-arrow" href="projects.php" aria-label="View"><i class="fas fa-arrow-up-right"></i></a><div class="work-body"><span class="work-tag">Housing</span><h3>The Novo Residences</h3><p>Kokapet • Multi-family design</p></div></article>
+      <article class="work reveal reveal-d2" id="overview-card">
+        <div id="overview-media-container" style="width: 100%; height: 100%; position: absolute; inset: 0;">
+          <video id="overview-video" src="assets/media/walkthrough-1.mp4" preload="none" muted playsinline style="width: 100%; height: 100%; object-fit: cover; background: #000;"></video>
+          <img id="overview-img" src="" alt="Overview" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+        </div>
+        <a class="work-arrow" href="projects.php" aria-label="View"><i class="fas fa-arrow-up-right"></i></a>
+        <div class="work-body">
+          <span class="work-tag">Site Update</span>
+          <h3>Sites overview</h3>
+          <p>Real-time progress • Quality check</p>
+        </div>
+        <?php
+          $pl = [];
+          for($i=1; $i<=13; $i++) $pl[] = ['type'=>'video', 'src'=>"assets/media/walkthrough-$i.mp4"];
+          for($i=1; $i<=3; $i++) $pl[] = ['type'=>'image', 'src'=>"assets/media/project-image-$i.jpeg"];
+        ?>
+        <script>
+          document.addEventListener('DOMContentLoaded', () => {
+            const playlist = <?= json_encode($pl) ?>;
+            let currentIdx = 0;
+            const vid = document.getElementById('overview-video');
+            const img = document.getElementById('overview-img');
+            let imgTimer = null;
+
+            function playNext() {
+              currentIdx = (currentIdx + 1) % playlist.length;
+              playCurrent();
+            }
+
+            function playCurrent() {
+              const item = playlist[currentIdx];
+              if (item.type === 'video') {
+                img.style.display = 'none';
+                vid.style.display = 'block';
+                vid.src = item.src;
+                vid.play().catch(e => {
+                  // If autoplay fails, skip to next after 2s
+                  setTimeout(playNext, 2000);
+                });
+              } else {
+                vid.style.display = 'none';
+                vid.pause();
+                img.style.display = 'block';
+                img.src = item.src;
+                clearTimeout(imgTimer);
+                imgTimer = setTimeout(playNext, 3500); // show image for 3.5 seconds
+              }
+            }
+
+            vid.addEventListener('ended', playNext);
+            
+            // start initial
+            vid.addEventListener('error', playNext); // skip if error
+          });
+        </script>
+      </article>
     </div>
   </div>
 </section>
@@ -148,6 +209,49 @@ include __DIR__ . '/includes/header.php';
       <div class="quote reveal reveal-d1"><div class="stars">★★★★★</div><p>“Their interiors feel quiet and premium. Lighting and woodwork detailing is a level above what we saw elsewhere.”</p><div class="quote-foot"><div class="avatar">S</div><div><strong>Sruthi M.</strong><small>Apartment interior, Financial District</small></div></div></div>
       <div class="quote reveal reveal-d2"><div class="stars">★★★★★</div><p>“Structural clarity + PMC discipline. They flagged a soil issue early and saved us lakhs. Highly professional.”</p><div class="quote-foot"><div class="avatar">A</div><div><strong>Anand &amp; team</strong><small>Commercial client, Begumpet</small></div></div></div>
     </div>
+
+    <div class="section-head center reveal mt-28">
+      <span class="eyebrow">Real Progress</span>
+      <h2>Site <em>Walkthroughs.</em></h2>
+      <p>Raw, unedited glimpses into our ongoing sites and finished structures.</p>
+    </div>
+    <div class="work-grid" style="margin-top: 2rem;">
+<?php
+      $walkthroughs = 13;
+      for ($i = 1; $i <= $walkthroughs; $i++):
+        $delay = ($i % 3 == 1) ? '' : (($i % 3 == 2) ? ' reveal-d1' : ' reveal-d2');
+?>
+      <article class="work reveal<?= $delay ?>" data-cat="walkthrough">
+        <video src="assets/media/walkthrough-<?= $i ?>.mp4" preload="none" muted loop playsinline style="width: 100%; height: 100%; object-fit: cover; background: #000;"></video>
+        <div class="work-body">
+          <span class="work-tag">Site Progress</span>
+          <h3>Walkthrough <?= $i ?></h3>
+        </div>
+      </article>
+<?php endfor; ?>
+      <article class="work reveal" data-cat="walkthrough">
+        <img src="assets/media/project-image-1.jpeg" alt="Recent site update" loading="lazy" decoding="async">
+        <div class="work-body">
+          <span class="work-tag">Update</span>
+          <h3>Site Image 1</h3>
+        </div>
+      </article>
+      <article class="work reveal reveal-d1" data-cat="walkthrough">
+        <img src="assets/media/project-image-2.jpeg" alt="Recent site update" loading="lazy" decoding="async">
+        <div class="work-body">
+          <span class="work-tag">Update</span>
+          <h3>Site Image 2</h3>
+        </div>
+      </article>
+      <article class="work reveal reveal-d2" data-cat="walkthrough">
+        <img src="assets/media/project-image-3.jpeg" alt="Recent site update" loading="lazy" decoding="async">
+        <div class="work-body">
+          <span class="work-tag">Update</span>
+          <h3>Site Image 3</h3>
+        </div>
+      </article>
+    </div>
+
     <div class="cta reveal mt-28">
       <div><h2>Have a plot or floor plan? <em>Let's sketch it right.</em></h2><p>Share your site location on WhatsApp or book a 20-minute studio consult. Estimate within 48 hours.</p></div>
       <div class="cta-actions"><a href="contact.php" class="btn btn-gold">Start your project</a><a href="tel:+917981458681" class="btn btn-ghost"><i class="fas fa-phone"></i> +91 79814 58681</a></div>
